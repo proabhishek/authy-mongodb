@@ -5,10 +5,10 @@ const {mongourl} = require('./secret.js');
 require('./models/user.js')
 const userRouter = require('./routes/auth.js');
 
+
 const port = 5000;
 
-console.log("app.js loaded");
-console.log(mongourl);
+
 
 
 // connect mongodb:

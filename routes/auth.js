@@ -3,7 +3,9 @@ const userRouter  = express.Router()
 const mongoose = require('mongoose')
 const user = mongoose.model("User")
 const bcrypt = require('bcrypt');
-
+const jwt = require('jsonwebtoken')
+const {jwtSecret} = require('../secret.js')
+const checkLogin = require('../middlewears/checkLogin.js')
 
 
 
@@ -90,6 +92,68 @@ userRouter.post("/signup/", (req, res)=>{
     
 } )
 
+
+userRouter.post("/login", (req, res)=>{
+      const {email, password} = req.body
+       // check if  email, password is not empty 
+       if( !email || !password){
+        return res.send({error:"please add all the fields"})
+      }
+        //check if email is valid
+       if(!email.includes("@")){
+            return res.send({error:"please enter a valid email"})
+        }
+
+        user.findOne({email: email})
+        .then(
+            (savedUser)=>{
+                // console.log(savedUser)
+                  if(savedUser == null){
+                      return res.send({error:"Email or password is incorrect"})
+                  }
+                  let hashedPassword = savedUser.password
+                  bcrypt.compare(password, hashedPassword)
+                  .then(
+                    (passwordMatched)=>{
+                       if(passwordMatched == false){
+                            return res.send({error:"Email or password is incorrect"})
+                       }
+                    //generate token
+                       const token = jwt.sign({_id:savedUser._id}, jwtSecret)
+                       res.send({message:"user logged in successfully", token: token})
+                    }
+                  )
+                  .catch(
+                    (err) => {  
+                        console.log("while comparing password")      
+                        console.log(err)
+                    }
+                  )
+            }
+
+        )
+
+        .catch(
+            (err) => {
+                console.log("while searching email in databse")      
+                console.log(err)
+            }
+        )
+
+})
+
+
+userRouter.post("/secret1", (req, res)=>{
+    res.send({message:"I know how to kill Madara Uchiha"})
+})
+
+
+
+
+userRouter.get("/secret2", checkLogin,(req, res)=>{
+    console.log(req.user)
+    res.send({message:"I know how to bring back Itachii Uchiha"})
+})
 
 
 module.exports = userRouter
