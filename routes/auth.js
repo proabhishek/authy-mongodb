@@ -97,11 +97,12 @@ userRouter.post("/login", (req, res)=>{
       const {email, password} = req.body
        // check if  email, password is not empty 
        if( !email || !password){
-        return res.send({error:"please add all the fields"})
+        // return res.send({error:"please add all the fields"})
+        return res.status(403).json({error:"please add all the fields"})
       }
         //check if email is valid
        if(!email.includes("@")){
-            return res.send({error:"please enter a valid email"})
+            return res.status(403).json({error:"please enter a valid email"})
         }
 
         user.findOne({email: email})
@@ -109,18 +110,18 @@ userRouter.post("/login", (req, res)=>{
             (savedUser)=>{
                 // console.log(savedUser)
                   if(savedUser == null){
-                      return res.send({error:"Email or password is incorrect"})
+                      return res.status(401).json({error:"Email or password is incorrect"})
                   }
                   let hashedPassword = savedUser.password
                   bcrypt.compare(password, hashedPassword)
                   .then(
                     (passwordMatched)=>{
                        if(passwordMatched == false){
-                            return res.send({error:"Email or password is incorrect"})
+                            return res.status(401).json({error:"Email or password is incorrect"})
                        }
                     //generate token
                        const token = jwt.sign({_id:savedUser._id}, jwtSecret)
-                       res.send({message:"user logged in successfully", token: token})
+                       res.status(200).json({message:"user logged in successfully", token: token})
                     }
                   )
                   .catch(
